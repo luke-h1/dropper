@@ -14,14 +14,14 @@ runs:
         version: 2.34.0
       env:
         OP_SERVICE_ACCOUNT_TOKEN: ${{ inputs.op_service_account_token }}
-        CLOUDFLARE_API_TOKEN: op://ci-cd/ipa-apk-distributer/CLOUDFLARE_API_TOKEN
-        AWS_ACCESS_KEY_ID: op://ci-cd/ipa-apk-distributer/AWS_ACCESS_KEY_ID
-        AWS_SECRET_ACCESS_KEY: op://ci-cd/ipa-apk-distributer/AWS_SECRET_ACCESS_KEY
+        CLOUDFLARE_API_TOKEN: op://ci-cd/dropper/CLOUDFLARE_API_TOKEN
+        AWS_ACCESS_KEY_ID: op://ci-cd/dropper/AWS_ACCESS_KEY_ID
+        AWS_SECRET_ACCESS_KEY: op://ci-cd/dropper/AWS_SECRET_ACCESS_KEY
 
     - name: Assert every value loaded
       uses: ./.github/actions/assert-env
       with:
-        source: 'op://ci-cd/ipa-apk-distributer'
+        source: 'op://ci-cd/dropper'
         hint: 'terraform cannot reach its S3 state or Cloudflare'
         names: |
           CLOUDFLARE_API_TOKEN

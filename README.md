@@ -1,10 +1,10 @@
-# ipa-apk distributer
+# dropper
 
 TestFlight not working? Need private distribution? Use this! Install links for internal iOS and Android builds. Upload an `.ipa` or `.apk`, open the link on your phone, tap install, voila!
 
 Next.js on Cloudflare Workers. Builds are stored in R2.
 
-[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/luke-h1/ipa-apk-distributer)
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/luke-h1/dropper)
 
 ## Setup
 
@@ -13,7 +13,7 @@ Next.js on Cloudflare Workers. Builds are stored in R2.
 `infra/` creates the R2 bucket, a scoped R2 key, the Worker, its domain and the API key.
 
 1. Edit `infra/terraform.tfvars`. `name` must match `name` in `wrangler.jsonc`, CI checks this.
-2. Create the tokens below and put them in the 1Password item `ci-cd/ipa-apk-distributer` (or change the `op://` paths in `infra/op.env` and `.github/actions/load-secrets/action.yml`).
+2. Create the tokens below and put them in the 1Password item `ci-cd/dropper` (or change the `op://` paths in `infra/op.env` and `.github/actions/load-secrets/action.yml`).
 3. Turn on deploys:
    ```sh
    gh secret set OP_SERVICE_ACCOUNT
@@ -39,7 +39,7 @@ You create three. Terraform creates the rest (the bucket-scoped R2 key and `API_
 The Cloudflare token can't be made from a script with a dashboard session (Cloudflare returns 403), so use the dashboard. This link pre-fills the permissions, then set Zone Resources to your zone:
 
 ```
-https://dash.cloudflare.com/profile/api-tokens?name=ipa-apk-distributer%20deploy&permissionGroupKeys=%5B%7B%22key%22%3A%22workers_scripts%22%2C%22type%22%3A%22edit%22%7D%2C%7B%22key%22%3A%22workers_r2%22%2C%22type%22%3A%22edit%22%7D%2C%7B%22key%22%3A%22account_api_tokens%22%2C%22type%22%3A%22edit%22%7D%2C%7B%22key%22%3A%22account_settings%22%2C%22type%22%3A%22read%22%7D%2C%7B%22key%22%3A%22workers_routes%22%2C%22type%22%3A%22edit%22%7D%2C%7B%22key%22%3A%22dns%22%2C%22type%22%3A%22edit%22%7D%2C%7B%22key%22%3A%22zone%22%2C%22type%22%3A%22read%22%7D%5D
+https://dash.cloudflare.com/profile/api-tokens?name=dropper%20deploy&permissionGroupKeys=%5B%7B%22key%22%3A%22workers_scripts%22%2C%22type%22%3A%22edit%22%7D%2C%7B%22key%22%3A%22workers_r2%22%2C%22type%22%3A%22edit%22%7D%2C%7B%22key%22%3A%22account_api_tokens%22%2C%22type%22%3A%22edit%22%7D%2C%7B%22key%22%3A%22account_settings%22%2C%22type%22%3A%22read%22%7D%2C%7B%22key%22%3A%22workers_routes%22%2C%22type%22%3A%22edit%22%7D%2C%7B%22key%22%3A%22dns%22%2C%22type%22%3A%22edit%22%7D%2C%7B%22key%22%3A%22zone%22%2C%22type%22%3A%22read%22%7D%5D
 ```
 
 Without Account API Tokens edit, the plan fails reading `tokens/permission_groups` with a 403.

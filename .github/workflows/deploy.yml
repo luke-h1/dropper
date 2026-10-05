@@ -14,7 +14,7 @@ permissions:
 jobs:
   plan:
     name: 📋 Terraform plan
-    if: github.repository != 'luke-h1/ipa-apk-distributer' && github.event_name == 'pull_request' && vars.DEPLOY_ENABLED == 'true'
+    if: ${{ !github.event.repository.is_template && github.event_name == 'pull_request' && vars.DEPLOY_ENABLED == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -49,7 +49,7 @@ jobs:
 
   deploy:
     name: 🚀 Deploy
-    if: github.repository != 'luke-h1/ipa-apk-distributer' && github.event_name != 'pull_request' && vars.DEPLOY_ENABLED == 'true'
+    if: ${{ !github.event.repository.is_template && github.event_name != 'pull_request' && vars.DEPLOY_ENABLED == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     concurrency:

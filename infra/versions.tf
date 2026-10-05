@@ -15,7 +15,7 @@ terraform {
   backend "s3" {
     bucket       = "cloudflare-zone-config-terraform-state"
     region       = "eu-west-2"
-    key          = "ipa-apk-distributer/terraform.tfstate"
+    key          = "dropper/terraform.tfstate"
     encrypt      = true
     use_lockfile = true
   }

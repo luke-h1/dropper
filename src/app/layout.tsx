@@ -4,7 +4,7 @@ import Link from 'next/link';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: { default: 'ipa-apk-distributer', template: '%s · ' },
+  title: { default: 'Dropper', template: '%s · Dropper' },
   description: 'Install internal iOS and Android builds',
   robots: { index: false, follow: false },
 };
@@ -23,7 +23,7 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
         <div className='mx-auto max-w-3xl px-4 pb-16'>
           <header className='flex items-center justify-between py-6'>
             <Link href='/' className='text-lg font-semibold tracking-tight'>
-              ipa-apk-distributer
+              Dropper
             </Link>
           </header>
           {children}
