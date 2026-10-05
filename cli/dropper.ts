@@ -9,7 +9,7 @@ import { formatBytes } from '../src/lib/format';
 import { Build, type BuildInput } from '../src/lib/types';
 import { inspectBinary } from './inspect';
 
-const HELP = `dropper - upload IPA/APK builds to your ipa-apk distributer site
+const HELP = `dropper - upload IPA/APK builds to your Dropper site
 
 Usage:
   dropper upload <file.ipa|file.apk> [options]
