@@ -12,8 +12,9 @@ terraform {
     }
   }
 
-  # Partial config, pass the rest with -backend-config. See README.
   backend "s3" {
+    bucket       = "cloudflare-zone-config-terraform-state"
+    region       = "eu-west-2"
     key          = "ipa-apk-distributer/terraform.tfstate"
     encrypt      = true
     use_lockfile = true

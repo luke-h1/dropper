@@ -1,9 +1,19 @@
-import { hasApiKey, json } from "@/lib/auth";
-import { deleteBuild } from "@/lib/builds";
+import { isApiKey } from '@/lib/auth';
+import { deleteBuild } from '@/lib/builds';
 
-export async function DELETE(request: Request, { params }: RouteContext<"/api/builds/[id]">) {
-  if (!(await hasApiKey(request))) return json({ error: "Unauthorized" }, 401);
+export async function DELETE(
+  request: Request,
+  { params }: RouteContext<'/api/builds/[id]'>,
+) {
+  if (!(await isApiKey(request.headers.get('x-api-key')))) {
+    return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   const { id } = await params;
-  if (!(await deleteBuild(id))) return json({ error: "Not found" }, 404);
-  return json({ deleted: id });
+
+  if (!(await deleteBuild(id))) {
+    return Response.json({ error: 'Not found' }, { status: 404 });
+  }
+
+  return Response.json({ deleted: id });
 }

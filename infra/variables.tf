@@ -4,7 +4,7 @@ variable "account_id" {
 }
 
 variable "hostname" {
-  description = "Where the site is served, e.g. dropper.example.com"
+  description = "Where the site is served, e.g. builds.example.com"
   type        = string
 }
 
@@ -16,7 +16,7 @@ variable "zone_name" {
 variable "name" {
   description = "Worker and bucket name. Must match `name` in wrangler.jsonc"
   type        = string
-  default     = "dropper"
+  default     = "ipa-apk-distributer"
 }
 
 variable "bucket_location" {
@@ -28,5 +28,5 @@ variable "bucket_location" {
 variable "retention_days" {
   description = "Delete builds older than this many days. 0 keeps them forever"
   type        = number
-  default     = 90
+  default     = 60
 }

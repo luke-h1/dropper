@@ -14,3 +14,6 @@ infra/.terraform
 infra/*.tfstate*
 infra/tfplan
 .secrets.json
+*.tfvars
+!.tfvars.example
+public/dropper.mjs

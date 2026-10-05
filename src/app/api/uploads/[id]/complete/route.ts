@@ -1,18 +1,33 @@
-import { hasApiKey, json } from "@/lib/auth";
-import { completeUpload, isBuildId, NotFoundError } from "@/lib/builds";
+import { isApiKey } from '@/lib/auth';
+import { completeUpload, isBuildId, NotFoundError } from '@/lib/builds';
 
 export async function POST(
   request: Request,
-  { params }: RouteContext<"/api/uploads/[id]/complete">,
+  { params }: RouteContext<'/api/uploads/[id]/complete'>,
 ) {
-  if (!(await hasApiKey(request))) return json({ error: "Unauthorized" }, 401);
+  if (!(await isApiKey(request.headers.get('x-api-key')))) {
+    return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   const { id } = await params;
-  if (!isBuildId(id)) return json({ error: "Not found" }, 404);
+
+  if (!isBuildId(id)) {
+    return Response.json({ error: 'Not found' }, { status: 404 });
+  }
+
   try {
     const build = await completeUpload(id);
-    return json({ build, url: new URL(`/b/${id}`, request.url).toString() });
+
+    return Response.json({
+      build,
+      url: new URL(`/b/${id}`, request.url).toString(),
+    });
   } catch (error) {
     const status = error instanceof NotFoundError ? 404 : 409;
-    return json({ error: (error as Error).message }, status);
+
+    const message =
+      error instanceof Error ? error.message : 'Upload could not complete';
+
+    return Response.json({ error: message }, { status });
   }
 }

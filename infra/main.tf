@@ -35,8 +35,6 @@ locals {
   ])
 }
 
-# R2's S3 API authenticates with an API token: the access key is the token id and the
-# secret is the SHA-256 of its value. Scoped to this one bucket.
 resource "cloudflare_account_token" "r2" {
   account_id = var.account_id
   name       = "${var.name}-r2"
@@ -56,7 +54,6 @@ resource "random_password" "api_key" {
   special = false
 }
 
-# Terraform owns the Worker and its domain; wrangler deploys the code onto it.
 resource "cloudflare_worker" "site" {
   account_id    = var.account_id
   name          = var.name

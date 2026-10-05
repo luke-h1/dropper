@@ -11,7 +11,6 @@ output "api_key" {
   sensitive = true
 }
 
-# Everything the Worker needs, in the JSON shape `wrangler deploy --secrets-file` takes.
 output "worker_secrets" {
   sensitive = true
   value = {

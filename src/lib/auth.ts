@@ -1,35 +1,37 @@
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
-import { hmac, safeEqual } from "./crypto";
-import { getEnv } from "./env";
+import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
 
-export const SESSION_COOKIE = "dropper_session";
+import * as z from 'zod/mini';
 
-// Derived from the key, so rotating API_KEY signs everyone out.
+import { hmac, safeEqual } from './crypto';
+
+export const SESSION_COOKIE = 'ipa_apk_distributor_session';
+
 export function sessionValue() {
-  return hmac(getEnv().apiKey, "session");
+  return hmac(process.env.API_KEY, 'session');
 }
 
-export function isApiKey(key: string | null | undefined) {
-  return key ? safeEqual(key, getEnv().apiKey) : Promise.resolve(false);
+export async function isApiKey(key: string | null) {
+  return key ? safeEqual(key, process.env.API_KEY) : false;
 }
 
 export async function hasSession(): Promise<boolean> {
-  // Read cookies first: it marks the page as dynamic, so env vars are only needed at runtime.
   const value = (await cookies()).get(SESSION_COOKIE)?.value;
+
   return value ? safeEqual(value, await sessionValue()) : false;
 }
 
-/** For pages: a `?key=` param is swapped for a session cookie and dropped from the URL. */
-export async function requireSession(path: string, key: string | string[] | undefined) {
-  if (typeof key === "string") redirect(`/api/session?${new URLSearchParams({ key, next: path })}`);
+export async function requireSession(
+  path: string,
+  key: string | string[] | undefined,
+) {
+  const single = z.string().safeParse(key);
+
+  if (single.success) {
+    return redirect(
+      `/api/session?${new URLSearchParams({ key: single.data, next: path })}`,
+    );
+  }
+
   return hasSession();
-}
-
-export async function hasApiKey(request: Request) {
-  return isApiKey(request.headers.get("x-api-key"));
-}
-
-export function json(body: unknown, status = 200) {
-  return Response.json(body, { status, headers: { "cache-control": "no-store" } });
 }

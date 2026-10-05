@@ -1,13 +1,22 @@
-import { hasApiKey, json } from "@/lib/auth";
-import { createUpload, parseBuildInput } from "@/lib/builds";
+import * as z from 'zod/mini';
+
+import { isApiKey } from '@/lib/auth';
+import { createUpload } from '@/lib/builds';
+import { BuildInput } from '@/lib/types';
 
 export async function POST(request: Request) {
-  if (!(await hasApiKey(request))) return json({ error: "Unauthorized" }, 401);
-  let input;
-  try {
-    input = parseBuildInput(await request.json());
-  } catch (error) {
-    return json({ error: (error as Error).message }, 400);
+  if (!(await isApiKey(request.headers.get('x-api-key')))) {
+    return Response.json({ error: 'Unauthorized' }, { status: 401 });
   }
-  return json(await createUpload(input), 201);
+
+  const input = BuildInput.safeParse(await request.json().catch(() => null));
+
+  if (!input.success) {
+    return Response.json(
+      { error: z.prettifyError(input.error) },
+      { status: 400 },
+    );
+  }
+
+  return Response.json(await createUpload(input.data), { status: 201 });
 }

@@ -34,7 +34,7 @@ jobs:
           op_service_account_token: ${{ secrets.OP_SERVICE_ACCOUNT }}
 
       - name: 🚀 Terraform init
-        run: terraform -chdir=infra init -input=false -backend-config=backend.hcl
+        run: terraform -chdir=infra init -input=false
 
       - name: 📋 Terraform plan
         run: |
@@ -77,7 +77,7 @@ jobs:
           op_service_account_token: ${{ secrets.OP_SERVICE_ACCOUNT }}
 
       - name: 🚀 Terraform init
-        run: terraform -chdir=infra init -input=false -backend-config=backend.hcl
+        run: terraform -chdir=infra init -input=false
 
       - name: 🚀 Terraform apply
         run: terraform -chdir=infra apply -input=false -auto-approve

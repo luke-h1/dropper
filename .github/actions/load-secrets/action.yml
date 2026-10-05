@@ -1,11 +1,11 @@
-name: "Load Secrets"
+name: 'Load Secrets'
 inputs:
   op_service_account_token:
-    description: "1Password service account token"
+    description: '1Password service account token'
     required: true
 
 runs:
-  using: "composite"
+  using: 'composite'
   steps:
     - name: Load secrets
       uses: 1password/load-secrets-action@92467eb28f72e8255933372f1e0707c567ce2259 # v4.0.0
@@ -21,8 +21,8 @@ runs:
     - name: Assert every value loaded
       uses: ./.github/actions/assert-env
       with:
-        source: "op://ci-cd/ipa-apk-distributer"
-        hint: "terraform cannot reach its S3 state or Cloudflare"
+        source: 'op://ci-cd/ipa-apk-distributer'
+        hint: 'terraform cannot reach its S3 state or Cloudflare'
         names: |
           CLOUDFLARE_API_TOKEN
           AWS_ACCESS_KEY_ID

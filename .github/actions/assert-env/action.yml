@@ -1,29 +1,29 @@
-name: "Assert env"
-description: "Fail the job when a required environment variable is unset, empty, or not a usable URL."
+name: 'Assert env'
+description: 'Fail the job when a required environment variable is unset, empty, or not a usable URL.'
 
 inputs:
   names:
-    description: "Whitespace-separated env var names that must be set and non-empty."
+    description: 'Whitespace-separated env var names that must be set and non-empty.'
     required: true
   urls:
-    description: "Whitespace-separated subset of `names` that must also be an https URL with a host."
+    description: 'Whitespace-separated subset of `names` that must also be an https URL with a host.'
     required: false
-    default: ""
+    default: ''
   optional:
-    description: "Whitespace-separated env var names that are allowed to be empty."
+    description: 'Whitespace-separated env var names that are allowed to be empty.'
     required: false
-    default: ""
+    default: ''
   source:
-    description: "Secret provider"
+    description: 'Secret provider'
     required: false
-    default: "1Password"
+    default: '1Password'
   hint:
-    description: ""
+    description: ''
     required: false
-    default: ""
+    default: ''
 
 runs:
-  using: "composite"
+  using: 'composite'
   steps:
     - name: Assert env
       shell: bash

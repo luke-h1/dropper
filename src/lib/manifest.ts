@@ -1,15 +1,17 @@
-import type { Build } from "./types";
+import type { Build } from './types';
 
 function escape(value: string) {
   return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
 }
 
-/** The over-the-air install manifest iOS fetches from an itms-services:// link. */
-export function installManifest(build: Build, ipaUrl: string): string {
+export function installManifest(
+  build: Pick<Build, 'bundleId' | 'version' | 'name'>,
+  ipaUrl: string,
+): string {
   return `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
