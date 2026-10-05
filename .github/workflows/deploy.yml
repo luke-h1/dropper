@@ -1,8 +1,7 @@
 name: Deploy
 
-# Never runs in the template repo itself. In a copy, runs once the repo variable DEPLOY_ENABLED
-# is "true". Secrets come from 1Password via the OP_SERVICE_ACCOUNT repo secret, see
-# .github/actions/load-secrets.
+# Runs once the repo variable DEPLOY_ENABLED is "true". Secrets come from 1Password via the
+# OP_SERVICE_ACCOUNT repo secret, see .github/actions/load-secrets.
 on:
   workflow_dispatch:
   pull_request:
@@ -80,8 +79,6 @@ jobs:
       - name: 🚀 Terraform init
         run: terraform -chdir=infra init -input=false
 
-      # Cloudflare refuses a custom domain for a Worker with no deployments, so attach it
-      # after the first deploy. On later runs the second apply is a no-op.
       - name: 🚀 Terraform apply
         run: |
           terraform -chdir=infra apply -input=false -auto-approve \
