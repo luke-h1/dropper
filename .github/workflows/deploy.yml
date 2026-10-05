@@ -14,7 +14,7 @@ permissions:
 jobs:
   plan:
     name: 📋 Terraform plan
-    if: github.event_name == 'pull_request' && vars.DEPLOY_ENABLED == 'true'
+    if: github.repository != 'luke-h1/ipa-apk-distributer' && github.event_name == 'pull_request' && vars.DEPLOY_ENABLED == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -49,7 +49,7 @@ jobs:
 
   deploy:
     name: 🚀 Deploy
-    if: github.event_name != 'pull_request' && vars.DEPLOY_ENABLED == 'true'
+    if: github.repository != 'luke-h1/ipa-apk-distributer' && github.event_name != 'pull_request' && vars.DEPLOY_ENABLED == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     concurrency:
@@ -79,10 +79,13 @@ jobs:
       - name: 🚀 Terraform init
         run: terraform -chdir=infra init -input=false
 
-      # Cloudflare refuses a custom domain for a Worker with no deployments, so attach it
-      # after the first deploy. On later runs the second apply is a no-op.
       - name: 🚀 Terraform apply
-        run: terraform -chdir=infra apply -input=false -auto-approve -exclude=cloudflare_workers_custom_domain.site
+        run: |
+          terraform -chdir=infra apply -input=false -auto-approve \
+            -target=cloudflare_worker.site \
+            -target=cloudflare_account_token.r2 \
+            -target=cloudflare_r2_bucket_lifecycle.builds \
+            -target=random_password.api_key
 
       - name: 🔑 Export Worker secrets
         run: |
