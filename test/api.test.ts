@@ -12,14 +12,13 @@ beforeAll(() => {
     S3_BUCKET: "test-bucket",
     S3_ACCESS_KEY_ID: "key",
     S3_SECRET_ACCESS_KEY: "secret",
-    UPLOAD_TOKEN: "upload-token",
-    SIGNING_SECRET: "signing-secret",
+    API_KEY: "api-key",
   });
 });
 
 afterAll(() => fake.server.stop(true));
 
-const auth = { authorization: "Bearer upload-token" };
+const auth = { "x-api-key": "api-key" };
 const params = <T>(value: T) => ({ params: Promise.resolve(value) });
 
 test("upload, list, install manifest and delete", async () => {
@@ -82,7 +81,7 @@ test("upload, list, install manifest and delete", async () => {
   const { builds: all } = (await listed.json()) as { builds: { id: string; name: string }[] };
   expect(all.map((b) => [b.id, b.name])).toEqual([[id, "My App"]]);
 
-  const { exp, sig } = await signInstallLink("signing-secret", id, 60);
+  const { exp, sig } = await signInstallLink("api-key", id, 60);
   const plist = await manifest.GET(
     new Request("https://dropper.test"),
     params({ id, exp: String(exp), sig }),

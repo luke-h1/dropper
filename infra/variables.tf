@@ -30,9 +30,3 @@ variable "retention_days" {
   type        = number
   default     = 90
 }
-
-variable "password_protected" {
-  description = "Ask for a generated password before showing builds"
-  type        = bool
-  default     = true
-}

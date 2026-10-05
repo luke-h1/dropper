@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { PlatformBadge } from "@/components/platform-badge";
-import { hasAccess } from "@/lib/auth";
+import { Locked } from "@/components/locked";
+import { requireSession } from "@/lib/auth";
 import { listBuilds } from "@/lib/builds";
 import { formatBytes, formatRelative } from "@/lib/format";
 import type { Platform } from "@/lib/types";
@@ -13,8 +13,8 @@ const FILTERS: { label: string; value?: Platform }[] = [
 ];
 
 export default async function Home({ searchParams }: PageProps<"/">) {
-  if (!(await hasAccess())) redirect("/login");
-  const { platform } = await searchParams;
+  const { platform, key } = await searchParams;
+  if (!(await requireSession("/", key))) return <Locked />;
   const builds = (await listBuilds()).filter((b) => !platform || b.platform === platform);
 
   return (

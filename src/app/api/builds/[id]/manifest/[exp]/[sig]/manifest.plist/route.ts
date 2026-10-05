@@ -11,7 +11,7 @@ export async function GET(
   { params }: RouteContext<"/api/builds/[id]/manifest/[exp]/[sig]/manifest.plist">,
 ) {
   const { id, exp, sig } = await params;
-  if (!(await verifyInstallLink(getEnv().signingSecret, id, Number(exp), sig))) {
+  if (!(await verifyInstallLink(getEnv().apiKey, id, Number(exp), sig))) {
     return new Response("Link expired, reload the build page", { status: 403 });
   }
   const build = await getBuild(id);

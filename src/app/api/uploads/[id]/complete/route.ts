@@ -1,11 +1,11 @@
-import { isUploader, json } from "@/lib/auth";
+import { hasApiKey, json } from "@/lib/auth";
 import { completeUpload, isBuildId, NotFoundError } from "@/lib/builds";
 
 export async function POST(
   request: Request,
   { params }: RouteContext<"/api/uploads/[id]/complete">,
 ) {
-  if (!(await isUploader(request))) return json({ error: "Unauthorized" }, 401);
+  if (!(await hasApiKey(request))) return json({ error: "Unauthorized" }, 401);
   const { id } = await params;
   if (!isBuildId(id)) return json({ error: "Not found" }, 404);
   try {

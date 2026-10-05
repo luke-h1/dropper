@@ -1,12 +1,10 @@
-import { hasAccess, json } from "@/lib/auth";
+import { hasApiKey, hasSession, json } from "@/lib/auth";
 import { getBuild } from "@/lib/builds";
 import { S3 } from "@/lib/s3";
 
-export async function GET(
-  _request: Request,
-  { params }: RouteContext<"/api/builds/[id]/download">,
-) {
-  if (!(await hasAccess())) return json({ error: "Unauthorized" }, 401);
+export async function GET(request: Request, { params }: RouteContext<"/api/builds/[id]/download">) {
+  if (!(await hasSession()) && !(await hasApiKey(request)))
+    return json({ error: "Unauthorized" }, 401);
   const { id } = await params;
   const build = await getBuild(id);
   if (!build) return json({ error: "Not found" }, 404);

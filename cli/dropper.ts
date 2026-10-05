@@ -23,7 +23,7 @@ Upload options:
 
 Environment:
   DROPPER_URL        Your Dropper site, e.g. https://dropper.example.com
-  DROPPER_TOKEN      The UPLOAD_TOKEN configured on the site
+  DROPPER_API_KEY    The API_KEY configured on the site
 `;
 
 function fail(message: string): never {
@@ -33,17 +33,17 @@ function fail(message: string): never {
 
 function config() {
   const url = process.env.DROPPER_URL?.replace(/\/+$/, "");
-  const token = process.env.DROPPER_TOKEN;
-  if (!url || !token) fail("DROPPER_URL and DROPPER_TOKEN must be set");
-  return { url, token };
+  const key = process.env.DROPPER_API_KEY;
+  if (!url || !key) fail("DROPPER_URL and DROPPER_API_KEY must be set");
+  return { url, key };
 }
 
 async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
-  const { url, token } = config();
+  const { url, key } = config();
   const res = await fetch(`${url}${path}`, {
     ...init,
     headers: {
-      authorization: `Bearer ${token}`,
+      "x-api-key": key,
       "content-type": "application/json",
       ...init.headers,
     },
@@ -104,7 +104,9 @@ async function upload(file: string, options: Record<string, string | boolean | u
 
   const { url } = await api<{ url: string }>(`/api/uploads/${id}/complete`, { method: "POST" });
   console.log(`\n${url}\n`);
-  if (options.qr !== false) console.log(renderUnicodeCompact(url));
+  // The QR code includes the key so the phone that scans it gets a session.
+  const phoneUrl = `${url}?key=${encodeURIComponent(config().key)}`;
+  if (options.qr !== false) console.log(renderUnicodeCompact(phoneUrl));
 }
 
 async function list() {

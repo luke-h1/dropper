@@ -1238,7 +1238,7 @@ Upload options:
 
 Environment:
   DROPPER_URL        Your Dropper site, e.g. https://dropper.example.com
-  DROPPER_TOKEN      The UPLOAD_TOKEN configured on the site
+  DROPPER_API_KEY    The API_KEY configured on the site
 `;
 function fail(message) {
   console.error(`error: ${message}`);
@@ -1246,17 +1246,17 @@ function fail(message) {
 }
 function config() {
   const url = process.env.DROPPER_URL?.replace(/\/+$/, "");
-  const token = process.env.DROPPER_TOKEN;
-  if (!url || !token)
-    fail("DROPPER_URL and DROPPER_TOKEN must be set");
-  return { url, token };
+  const key = process.env.DROPPER_API_KEY;
+  if (!url || !key)
+    fail("DROPPER_URL and DROPPER_API_KEY must be set");
+  return { url, key };
 }
 async function api(path, init = {}) {
-  const { url, token } = config();
+  const { url, key } = config();
   const res = await fetch(`${url}${path}`, {
     ...init,
     headers: {
-      authorization: `Bearer ${token}`,
+      "x-api-key": key,
       "content-type": "application/json",
       ...init.headers
     }
@@ -1310,8 +1310,9 @@ async function upload(file, options) {
   console.log(`
 ${url}
 `);
+  const phoneUrl = `${url}?key=${encodeURIComponent(config().key)}`;
   if (options.qr !== false)
-    console.log(renderUnicodeCompact(url));
+    console.log(renderUnicodeCompact(phoneUrl));
 }
 async function list() {
   const { builds } = await api("/api/builds");

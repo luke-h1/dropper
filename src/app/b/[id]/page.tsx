@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { renderSVG } from "uqr";
 import { PlatformBadge } from "@/components/platform-badge";
-import { hasAccess } from "@/lib/auth";
+import { Locked } from "@/components/locked";
+import { requireSession } from "@/lib/auth";
 import { getBuild } from "@/lib/builds";
 import { signInstallLink } from "@/lib/crypto";
 import { getEnv } from "@/lib/env";
@@ -20,18 +21,19 @@ async function origin() {
   return `${proto}://${host}`;
 }
 
-export default async function BuildPage({ params }: PageProps<"/b/[id]">) {
+export default async function BuildPage({ params, searchParams }: PageProps<"/b/[id]">) {
   const { id } = await params;
-  if (!(await hasAccess())) redirect("/login");
+  if (!(await requireSession(`/b/${id}`, (await searchParams).key))) return <Locked />;
   const build = await getBuild(id);
   if (!build) notFound();
 
   const base = await origin();
-  const pageUrl = `${base}/b/${build.id}`;
+  // The QR code carries the key so a phone can open it straight away.
+  const pageUrl = `${base}/b/${build.id}?key=${encodeURIComponent(getEnv().apiKey)}`;
   const downloadUrl = `/api/builds/${build.id}/download`;
   let installUrl = downloadUrl;
   if (build.platform === "ios") {
-    const { exp, sig } = await signInstallLink(getEnv().signingSecret, build.id, 60 * 60);
+    const { exp, sig } = await signInstallLink(getEnv().apiKey, build.id, 60 * 60);
     const manifestUrl = `${base}/api/builds/${build.id}/manifest/${exp}/${sig}/manifest.plist`;
     installUrl = `itms-services://?action=download-manifest&url=${encodeURIComponent(manifestUrl)}`;
   }

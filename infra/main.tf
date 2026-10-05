@@ -51,19 +51,8 @@ resource "cloudflare_account_token" "r2" {
   ]
 }
 
-resource "random_password" "upload_token" {
+resource "random_password" "api_key" {
   length  = 48
-  special = false
-}
-
-resource "random_password" "signing_secret" {
-  length  = 64
-  special = false
-}
-
-resource "random_password" "access" {
-  count   = var.password_protected ? 1 : 0
-  length  = 20
   special = false
 }
 
