@@ -12,19 +12,37 @@ Next.js on Cloudflare Workers. Builds are stored in R2.
 
 `infra/` creates the R2 bucket, a scoped R2 key, the Worker, its domain and the API key.
 
-1. Edit `infra/terraform.tfvars`.
-2. Create a Cloudflare account token with Workers Scripts, Workers R2 Storage and Account API Tokens (edit), Account Settings (read), plus Workers Routes, DNS (edit) and Zone (read) on your zone.
-3. Put `CLOUDFLARE_API_TOKEN`, `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` in the 1Password item `ci-cd/ipa-apk-distributer` or a secret provider of your choice, then:
+1. Edit `infra/terraform.tfvars`. `name` must match `name` in `wrangler.jsonc`, CI checks this.
+2. Create the tokens below and put them in the 1Password item `ci-cd/ipa-apk-distributer` (or change the `op://` paths in `infra/op.env` and `.github/actions/load-secrets/action.yml`).
+3. Turn on deploys:
    ```sh
    gh secret set OP_SERVICE_ACCOUNT
    gh variable set DEPLOY_ENABLED --body true
    ```
-4. Push to `main`. Get the API key with:
+4. Push to `main` or run the Deploy workflow. Get the API key with:
    ```sh
    cd infra
    op run --env-file=op.env -- terraform init
    op run --env-file=op.env -- terraform output -raw api_key
    ```
+
+### Tokens
+
+You create three. Terraform creates the rest (the bucket-scoped R2 key and `API_KEY`) and hands them to the Worker as secrets.
+
+| Secret                                        | Where              | What it needs                                                                                                                                               |
+| --------------------------------------------- | ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CLOUDFLARE_API_TOKEN`                        | 1Password          | Account: Workers Scripts edit, Workers R2 Storage edit, API Tokens edit, Account Settings read. Zone (just yours): Workers Routes edit, DNS edit, Zone read |
+| `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` | 1Password          | Read, write and delete on the terraform state bucket in `infra/versions.tf`                                                                                 |
+| `OP_SERVICE_ACCOUNT`                          | GitHub repo secret | A 1Password service account token with read access to the vault above                                                                                       |
+
+The Cloudflare token can't be made from a script with a dashboard session (Cloudflare returns 403), so use the dashboard. This link pre-fills the permissions, then set Zone Resources to your zone:
+
+```
+https://dash.cloudflare.com/profile/api-tokens?name=ipa-apk-distributer%20deploy&permissionGroupKeys=%5B%7B%22key%22%3A%22workers_scripts%22%2C%22type%22%3A%22edit%22%7D%2C%7B%22key%22%3A%22workers_r2%22%2C%22type%22%3A%22edit%22%7D%2C%7B%22key%22%3A%22account_api_tokens%22%2C%22type%22%3A%22edit%22%7D%2C%7B%22key%22%3A%22account_settings%22%2C%22type%22%3A%22read%22%7D%2C%7B%22key%22%3A%22workers_routes%22%2C%22type%22%3A%22edit%22%7D%2C%7B%22key%22%3A%22dns%22%2C%22type%22%3A%22edit%22%7D%2C%7B%22key%22%3A%22zone%22%2C%22type%22%3A%22read%22%7D%5D
+```
+
+Without Account API Tokens edit, the plan fails reading `tokens/permission_groups` with a 403.
 
 ### Anywhere else
 

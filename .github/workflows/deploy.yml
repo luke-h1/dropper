@@ -79,8 +79,10 @@ jobs:
       - name: 🚀 Terraform init
         run: terraform -chdir=infra init -input=false
 
+      # Cloudflare refuses a custom domain for a Worker with no deployments, so attach it
+      # after the first deploy. On later runs the second apply is a no-op.
       - name: 🚀 Terraform apply
-        run: terraform -chdir=infra apply -input=false -auto-approve
+        run: terraform -chdir=infra apply -input=false -auto-approve -exclude=cloudflare_workers_custom_domain.site
 
       - name: 🔑 Export Worker secrets
         run: |
@@ -99,6 +101,9 @@ jobs:
 
       - name: 🚀 Deploy Worker
         run: bunx opennextjs-cloudflare deploy --secrets-file "$RUNNER_TEMP/secrets.json"
+
+      - name: 🌐 Attach custom domain
+        run: terraform -chdir=infra apply -input=false -auto-approve
 
       - name: 🧹 Remove secrets file
         if: always()

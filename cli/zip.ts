@@ -33,7 +33,7 @@ export class ZipReader {
   }
 
   find(pattern: RegExp): ZipEntry | undefined {
-    return this.entries.find((entry) => pattern.test(entry.name));
+    return this.entries.find(entry => pattern.test(entry.name));
   }
 
   read(entry: ZipEntry): Buffer {
@@ -146,7 +146,7 @@ export class ZipReader {
 }
 
 function applyZip64Extra(entry: ZipEntry, extra: Buffer) {
-  for (let p = 0; p + 4 <= extra.length; ) {
+  for (let p = 0; p + 4 <= extra.length;) {
     const id = extra.readUInt16LE(p);
     const length = extra.readUInt16LE(p + 2);
 

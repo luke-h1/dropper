@@ -115,7 +115,7 @@ export function parseManifest(buf: Buffer): ManifestInfo {
   let resourceMap: number[] = [];
   const info: ManifestInfo = {};
 
-  for (let p = buf.readUInt16LE(2); p < buf.length; ) {
+  for (let p = buf.readUInt16LE(2); p < buf.length;) {
     const type = buf.readUInt16LE(p);
     const size = buf.readUInt32LE(p + 4);
 
@@ -196,7 +196,7 @@ export class ResourceTable {
       throw new Error('Not a resources.arsc file');
     }
 
-    for (let p = buf.readUInt16LE(2); p < buf.length; ) {
+    for (let p = buf.readUInt16LE(2); p < buf.length;) {
       const type = buf.readUInt16LE(p);
       const size = buf.readUInt32LE(p + 4);
 
@@ -218,7 +218,7 @@ export class ResourceTable {
     const buf = this.buf;
     const packageId = buf.readUInt32LE(start + 8);
 
-    for (let p = start + buf.readUInt16LE(start + 2); p < start + size; ) {
+    for (let p = start + buf.readUInt16LE(start + 2); p < start + size;) {
       const type = buf.readUInt16LE(p);
       const chunkSize = buf.readUInt32LE(p + 4);
 
@@ -229,7 +229,7 @@ export class ResourceTable {
 
         const isDefaultConfig = buf
           .subarray(configStart + 4, configStart + configSize)
-          .every((b) => b === 0);
+          .every(b => b === 0);
 
         const key = `${packageId}:${typeId}`;
         const list = this.types.get(key) ?? [];
