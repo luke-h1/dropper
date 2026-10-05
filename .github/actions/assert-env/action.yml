@@ -1,0 +1,77 @@
+name: "Assert env"
+description: "Fail the job when a required environment variable is unset, empty, or not a usable URL."
+
+inputs:
+  names:
+    description: "Whitespace-separated env var names that must be set and non-empty."
+    required: true
+  urls:
+    description: "Whitespace-separated subset of `names` that must also be an https URL with a host."
+    required: false
+    default: ""
+  optional:
+    description: "Whitespace-separated env var names that are allowed to be empty."
+    required: false
+    default: ""
+  source:
+    description: "Secret provider"
+    required: false
+    default: "1Password"
+  hint:
+    description: ""
+    required: false
+    default: ""
+
+runs:
+  using: "composite"
+  steps:
+    - name: Assert env
+      shell: bash
+      env:
+        ASSERT_NAMES: ${{ inputs.names }}
+        ASSERT_URLS: ${{ inputs.urls }}
+        ASSERT_SOURCE: ${{ inputs.source }}
+        ASSERT_HINT: ${{ inputs.hint }}
+      run: |
+        set -uo pipefail
+
+        missing=()
+        malformed=()
+
+        for name in $ASSERT_NAMES; do
+          value="${!name:-}"
+          # Trim, so a field holding only spaces counts as empty.
+          value="$(printf '%s' "$value" | tr -d '[:space:]')"
+          if [ -z "$value" ]; then
+            missing+=("$name")
+          fi
+        done
+
+        for name in $ASSERT_URLS; do
+          value="${!name:-}"
+          [ -z "$value" ] && continue
+          if ! printf '%s' "$value" | grep -Eq '^https://[A-Za-z0-9._-]+(:[0-9]+)?(/[^[:space:]]*)?$'; then
+            malformed+=("$name")
+          fi
+        done
+
+        status=0
+
+        if [ ${#missing[@]} -gt 0 ]; then
+          echo "::error::missing or empty in ${ASSERT_SOURCE}: ${missing[*]}${ASSERT_HINT:+ - $ASSERT_HINT}" >&2
+          status=1
+        fi
+
+        if [ ${#malformed[@]} -gt 0 ]; then
+          echo "::error::not an https URL with a host in ${ASSERT_SOURCE}: ${malformed[*]} - terraform cannot reach an endpoint it cannot parse" >&2
+          status=1
+        fi
+
+        if [ "$status" -ne 0 ]; then
+          exit 1
+        fi
+
+        printf 'env ok (%s):\n' "$ASSERT_SOURCE"
+        for name in $ASSERT_NAMES; do
+          printf '  %s\n' "$name"
+        done

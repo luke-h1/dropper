@@ -34,22 +34,21 @@ Click **Use this template** on GitHub (or fork it), then pick one of the options
 2. Create a Cloudflare **account** API token with:
    - Account: *Workers Scripts: Edit*, *Workers R2 Storage: Edit*, *Account API Tokens: Edit*, *Account Settings: Read*
    - Zone (your zone): *Workers Routes: Edit*, *DNS: Edit*, *Zone: Read*
-3. Add repo secrets `CLOUDFLARE_API_TOKEN`, `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` (for the state bucket), and set the repo variable `DEPLOY_ENABLED` to `true`:
+3. Secrets come from 1Password. Create an item `ipa-apk-distributer` in your `ci-cd` vault with fields `CLOUDFLARE_API_TOKEN`, `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` (for the state bucket), give a service account read access to the vault, then:
    ```sh
-   gh secret set CLOUDFLARE_API_TOKEN
-   gh secret set AWS_ACCESS_KEY_ID
-   gh secret set AWS_SECRET_ACCESS_KEY
+   gh secret set OP_SERVICE_ACCOUNT   # the service account token
    gh variable set DEPLOY_ENABLED --body true
    ```
+   Different vault or item? Update [`.github/actions/load-secrets`](.github/actions/load-secrets/action.yml) and [`infra/op.env`](infra/op.env).
 4. Push to `main` (or run the *Deploy* workflow). Then grab your credentials:
    ```sh
    cd infra
-   terraform init -backend-config=backend.hcl
-   terraform output -raw upload_token     # DROPPER_TOKEN for the CLI
-   terraform output -raw access_password  # to sign in to the site
+   op run --env-file=op.env -- terraform init -backend-config=backend.hcl
+   op run --env-file=op.env -- terraform output -raw upload_token     # DROPPER_TOKEN for the CLI
+   op run --env-file=op.env -- terraform output -raw access_password  # to sign in to the site
    ```
 
-To run it locally instead: `terraform -chdir=infra apply`, then `terraform -chdir=infra output -json worker_secrets > .secrets.json && bunx opennextjs-cloudflare build && bunx opennextjs-cloudflare deploy --secrets-file .secrets.json && rm .secrets.json`.
+To run it locally instead, prefix Terraform with `op run --env-file=infra/op.env --`: `terraform -chdir=infra apply`, then `terraform -chdir=infra output -json worker_secrets > .secrets.json && bunx opennextjs-cloudflare build && bunx opennextjs-cloudflare deploy --secrets-file .secrets.json && rm .secrets.json`.
 
 ### Cloudflare by hand, or AWS S3
 
