@@ -96,7 +96,7 @@ export default async function BuildPage({
           {formatRelative(build.uploadedAt)}
         </p>
 
-        {warnings.map((warning) => (
+        {warnings.map(warning => (
           <p
             key={warning}
             className='mt-4 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:bg-amber-950/50 dark:text-amber-200'

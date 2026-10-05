@@ -90,7 +90,7 @@ function inspectIpa(zip: ZipReader, path: string): BinaryInfo {
   const appDir = infoEntry.name.slice(0, -'Info.plist'.length);
 
   const profileEntry = zip.entries.find(
-    (e) => e.name === `${appDir}embedded.mobileprovision`,
+    e => e.name === `${appDir}embedded.mobileprovision`,
   );
 
   const profile = profileEntry

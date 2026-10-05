@@ -183,7 +183,7 @@ export function parseXmlPlist(xml: string): PlistValue {
 
   const tokens = [
     ...xml.slice(start).matchAll(/<(\/?)([a-zA-Z]+)[^>]*?(\/?)>|([^<]+)/g),
-  ].filter((m) => m[2] || m[4]!.trim() !== '');
+  ].filter(m => m[2] || m[4]!.trim() !== '');
 
   let i = 0;
 

@@ -4,7 +4,7 @@ const required = z.string().check(z.minLength(1), z.maxLength(200));
 
 const optional = (max = 200) =>
   z.pipe(
-    z.transform((value) => value || undefined),
+    z.transform(value => value || undefined),
     z.optional(z.string().check(z.maxLength(max))),
   );
 

@@ -16,7 +16,6 @@ variable "zone_name" {
 variable "name" {
   description = "Worker and bucket name. Must match `name` in wrangler.jsonc"
   type        = string
-  default     = "ipa-apk-distributer"
 }
 
 variable "bucket_location" {

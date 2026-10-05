@@ -37,5 +37,13 @@ jobs:
         with:
           terraform_wrapper: false
       - run: terraform -chdir=infra fmt -check -recursive
+      - name: Worker name matches wrangler.jsonc
+        run: |
+          tf=$(sed -nE 's/^name *= *"(.*)"/\1/p' infra/terraform.tfvars)
+          wr=$(sed -nE 's/^  "name": "(.*)",/\1/p' wrangler.jsonc)
+          if [ -z "$tf" ] || [ "$tf" != "$wr" ]; then
+            echo "::error::name in infra/terraform.tfvars ($tf) must match wrangler.jsonc ($wr), or the custom domain points at a Worker that never gets deployed"
+            exit 1
+          fi
       - run: terraform -chdir=infra init -backend=false -input=false
       - run: terraform -chdir=infra validate
