@@ -1,0 +1,5 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "printWidth": 100,
+  "ignorePatterns": ["public/dropper.mjs", "cloudflare-env.d.ts", "bun.lock", "README.md"]
+}

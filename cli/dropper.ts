@@ -1,0 +1,156 @@
+import { execFileSync } from "node:child_process";
+import { openAsBlob } from "node:fs";
+import { parseArgs } from "node:util";
+import { renderUnicodeCompact } from "uqr";
+import { formatBytes } from "../src/lib/format";
+import type { Build, BuildInput } from "../src/lib/types";
+import { inspectBinary } from "./inspect";
+
+const HELP = `dropper - upload IPA/APK builds to your Dropper site
+
+Usage:
+  dropper upload <file.ipa|file.apk> [options]
+  dropper list
+  dropper delete <id>
+
+Upload options:
+  --profile <name>   EAS build profile, e.g. development
+  --channel <name>   EAS Update channel
+  --notes <text>     Release notes shown on the build page
+  --name <name>      Override the app name read from the binary
+  --no-git           Don't record the current git branch and commit
+  --no-qr            Don't print a QR code after uploading
+
+Environment:
+  DROPPER_URL        Your Dropper site, e.g. https://dropper.example.com
+  DROPPER_TOKEN      The UPLOAD_TOKEN configured on the site
+`;
+
+function fail(message: string): never {
+  console.error(`error: ${message}`);
+  process.exit(1);
+}
+
+function config() {
+  const url = process.env.DROPPER_URL?.replace(/\/+$/, "");
+  const token = process.env.DROPPER_TOKEN;
+  if (!url || !token) fail("DROPPER_URL and DROPPER_TOKEN must be set");
+  return { url, token };
+}
+
+async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
+  const { url, token } = config();
+  const res = await fetch(`${url}${path}`, {
+    ...init,
+    headers: {
+      authorization: `Bearer ${token}`,
+      "content-type": "application/json",
+      ...init.headers,
+    },
+  });
+  const body = (await res.json().catch(() => ({}))) as T & { error?: string };
+  if (!res.ok) fail(body.error ?? `${init.method ?? "GET"} ${path} failed with ${res.status}`);
+  return body;
+}
+
+function git(...args: string[]): string | undefined {
+  try {
+    return (
+      execFileSync("git", args, { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim() ||
+      undefined
+    );
+  } catch {
+    return undefined;
+  }
+}
+
+async function upload(file: string, options: Record<string, string | boolean | undefined>) {
+  let info;
+  try {
+    info = inspectBinary(file);
+  } catch (error) {
+    fail((error as Error).message);
+  }
+  const input: BuildInput = {
+    ...info,
+    name: (options.name as string | undefined) ?? info.name,
+    profile: options.profile as string | undefined,
+    channel: options.channel as string | undefined,
+    notes: options.notes as string | undefined,
+  };
+  if (options.git !== false) {
+    input.gitBranch = git("rev-parse", "--abbrev-ref", "HEAD");
+    input.gitCommit = git("rev-parse", "HEAD");
+  }
+
+  console.log(`${input.name} ${input.version} (${input.buildNumber}) · ${input.bundleId}`);
+  if (input.distribution === "app-store") {
+    console.warn(
+      'warning: this IPA is signed for App Store distribution and cannot be installed from Dropper. Use an EAS profile with "distribution": "internal".',
+    );
+  }
+
+  const { id, uploadUrl } = await api<{ id: string; uploadUrl: string }>("/api/uploads", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+
+  console.log(`Uploading ${formatBytes(input.size)}...`);
+  const started = Date.now();
+  const res = await fetch(uploadUrl, { method: "PUT", body: await openAsBlob(file) });
+  if (!res.ok) fail(`Upload to storage failed with ${res.status}: ${await res.text()}`);
+  const seconds = (Date.now() - started) / 1000;
+  console.log(`Uploaded in ${seconds.toFixed(1)}s`);
+
+  const { url } = await api<{ url: string }>(`/api/uploads/${id}/complete`, { method: "POST" });
+  console.log(`\n${url}\n`);
+  if (options.qr !== false) console.log(renderUnicodeCompact(url));
+}
+
+async function list() {
+  const { builds } = await api<{ builds: Build[] }>("/api/builds");
+  for (const b of builds) {
+    const platform = b.platform === "ios" ? "iOS    " : "Android";
+    console.log(
+      `${b.id}  ${platform}  ${b.name} ${b.version} (${b.buildNumber})  ${b.profile ?? ""}  ${b.uploadedAt}`,
+    );
+  }
+  if (builds.length === 0) console.log("No builds yet");
+}
+
+async function main() {
+  const { values, positionals } = parseArgs({
+    allowPositionals: true,
+    allowNegative: true,
+    options: {
+      profile: { type: "string" },
+      channel: { type: "string" },
+      notes: { type: "string" },
+      name: { type: "string" },
+      git: { type: "boolean" },
+      qr: { type: "boolean" },
+      help: { type: "boolean", short: "h" },
+    },
+  });
+  const [command, arg] = positionals;
+  if (values.help || !command) {
+    console.log(HELP);
+    return;
+  }
+  switch (command) {
+    case "upload":
+      if (!arg) fail("Usage: dropper upload <file.ipa|file.apk>");
+      return upload(arg, values);
+    case "list":
+      return list();
+    case "delete":
+      if (!arg) fail("Usage: dropper delete <id>");
+      await api(`/api/builds/${encodeURIComponent(arg)}`, { method: "DELETE" });
+      console.log(`Deleted ${arg}`);
+      return;
+    default:
+      fail(`Unknown command ${command}\n\n${HELP}`);
+  }
+}
+
+await main();
