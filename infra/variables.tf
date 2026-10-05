@@ -29,3 +29,9 @@ variable "retention_days" {
   type        = number
   default     = 60
 }
+
+variable "apply_firewall" {
+  description = "Add WAF rules for the hostname. Creates the zone's http_request_firewall_custom ruleset, so leave off if something else already manages it and add the rules there instead"
+  type        = bool
+  default     = false
+}

@@ -44,6 +44,10 @@ https://dash.cloudflare.com/profile/api-tokens?name=ipa-apk-distributer%20deploy
 
 Without Account API Tokens edit, the plan fails reading `tokens/permission_groups` with a 403.
 
+### Firewall
+
+Set `apply_firewall = true` in `infra/terraform.tfvars` to block keyless `/api` calls and unused methods at the edge. The token then also needs Zone WAF edit on your zone. It creates the zone's custom firewall ruleset, so if something else already manages that, add the rules from `infra/firewall.tf` there instead.
+
 ### Anywhere else
 
 Create a private bucket and a key that can read, write, delete and list it. Set the variables in `.env.example` (`openssl rand -hex 32` for the API key), then `bun run deploy`.
