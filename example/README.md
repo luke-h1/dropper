@@ -13,10 +13,7 @@ example/
     distribute.yml          build with EAS, upload the artifacts to Dropper
 ```
 
-## The app
-
-Nothing interesting - a single screen that prints its version and build number so you
-can tell which build you installed. The point is the pipeline, not the UI.
+## Setup
 
 ```sh
 cd example
@@ -24,10 +21,10 @@ bun install
 bun start
 ```
 
-## Why these EAS settings
+## Why these EAS settings?
 
 iOS only installs **ad hoc**, **development** or **enterprise** builds over the air, and
-Android needs an **APK**, not an AAB. The `preview` profile in `eas.json` sets exactly that:
+Android needs an **APK**, not an AAB.
 
 ```json
 {
@@ -51,10 +48,10 @@ you if you try.
 
 `.github/workflows/distribute.yml` runs on every push to `main` (and on demand). It:
 
-1. builds the `preview` profile for both platforms with `eas build --json`,
-2. reads the artifact URLs out of that JSON,
-3. downloads `dropper.mjs` from your Dropper site,
-4. uploads each artifact with `dropper upload`, tagged with the branch and commit.
+1. Builds the `preview` profile for both platforms with `eas build --json`,
+2. Reads the artifact URLs out of that JSON,
+3. Downloads `dropper.mjs` from your Dropper site,
+4. Uploads each artifact with `dropper upload`, tagged with the branch and commit.
 
 Dropper reads the app name, bundle id and version straight out of the binary and prints
 an install link (and QR) per build.

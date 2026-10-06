@@ -2,11 +2,6 @@ name: Build & distribute
 
 # Builds an internal-distribution IPA + APK with EAS, then uploads both to Dropper
 # so they can be installed over the air from the link Dropper prints.
-#
-# This workflow lives in the example and is meant to be copied to the ROOT
-# .github/workflows of your own app's repo - GitHub only runs workflows from the
-# repository root, not from a subfolder.
-
 on:
   workflow_dispatch:
   push:
