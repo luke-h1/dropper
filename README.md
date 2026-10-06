@@ -83,6 +83,10 @@ Register test devices with `eas device:create`.
 
 One `API_KEY` variable is responsible for protecting the endpoints. API calls should include it as `x-api-key`. In a browser, open any page with `?key=<API_KEY>`
 
+## Example
+
+[`example/`](example/) is a minimal Expo app that builds an internal-distribution IPA and APK with EAS and uploads both to a Dropper site from GitHub Actions
+
 ## License
 
 MIT

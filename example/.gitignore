@@ -1,0 +1,29 @@
+# Expo
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+
+# Native
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+
+# Build artifacts downloaded in CI
+build/
+*.ipa
+*.apk
+*.aab
+
+# Dependencies
+node_modules/
+
+# CLI downloaded in CI
+dropper.mjs
+
+# Metro / Misc
+.DS_Store
+npm-debug.*
