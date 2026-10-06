@@ -1,0 +1,72 @@
+name: Build & distribute
+
+# Builds an internal-distribution IPA + APK with EAS, then uploads both to Dropper
+# so they can be installed over the air from the link Dropper prints.
+#
+# This workflow lives in the example and is meant to be copied to the ROOT
+# .github/workflows of your own app's repo - GitHub only runs workflows from the
+# repository root, not from a subfolder.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  distribute:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          persist-credentials: false
+
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+
+      - uses: expo/expo-github-action@2a5234bc47d23ff98a7b4fe1f21e3acbd053a5a0 # v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Install
+        run: bun install --frozen-lockfile
+
+      - name: Build (EAS, internal distribution)
+        id: build
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          eas build \
+            --profile preview \
+            --platform all \
+            --non-interactive \
+            --wait \
+            --json > builds.json
+          cat builds.json | jq -r '.[] | "\(.platform)\t\(.artifacts.applicationArchiveUrl)"' > artifacts.tsv
+
+      - name: Download the Dropper CLI
+        env:
+          DROPPER_URL: ${{ secrets.DROPPER_URL }}
+        run: curl -fsSL "$DROPPER_URL/dropper.mjs" -o dropper.mjs
+
+      - name: Upload builds to Dropper
+        env:
+          DROPPER_URL: ${{ secrets.DROPPER_URL }}
+          DROPPER_API_KEY: ${{ secrets.DROPPER_API_KEY }}
+        run: |
+          set -euo pipefail
+          while IFS=$'\t' read -r platform url; do
+            [ -z "$url" ] && { echo "::error::no artifact URL for $platform"; exit 1; }
+            ext=$([ "$platform" = "IOS" ] && echo ipa || echo apk)
+            file="build/app-$platform.$ext"
+            mkdir -p build
+            echo "Downloading $platform build..."
+            curl -fsSL "$url" -o "$file"
+            node dropper.mjs upload "$file" \
+              --profile preview \
+              --notes "${GITHUB_REF_NAME} @ ${GITHUB_SHA::7}" \
+              --no-qr
+          done < artifacts.tsv

@@ -20,7 +20,8 @@
     "infra/**",
     "public/dropper.mjs",
     "cloudflare-env.d.ts",
-    "next-env.d.ts"
+    "next-env.d.ts",
+    "example/**"
   ],
   "plugins": ["unicorn", "oxc"],
   "jsPlugins": [

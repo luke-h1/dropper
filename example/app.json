@@ -1,0 +1,25 @@
+{
+  "expo": {
+    "name": "Dropper Example",
+    "slug": "dropper-example",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "dropperexample",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "bundleIdentifier": "com.example.dropper",
+      "supportsTablet": true
+    },
+    "android": {
+      "package": "com.example.dropper",
+      "edgeToEdgeEnabled": true
+    },
+    "plugins": ["expo-router"],
+    "extra": {
+      "eas": {
+        "projectId": "00000000-0000-0000-0000-000000000000"
+      }
+    }
+  }
+}
